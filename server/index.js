@@ -7,7 +7,9 @@ const mainBoxRoutes = require('./src/modules/boxes/main-box/boxes.routes')
 const sessionRoutes = require('./src/modules/sessions/sessions.route')
 const userRoutes = require('./src/modules/users/users.routes')
 const logsRoutes = require('./src/modules/logs/logs.routes')
+const authRoutes = require('./src/modules/auth/auth.routes')
 
+const cookieParser = require('cookie-parser')
 
 const client = require('./src/mqtt/client')
 const { initMqtt } = require('./src/mqtt/init')
@@ -54,6 +56,9 @@ app.use(sessionRoutes)
 app.use(userRoutes)
 
 app.use(logsRoutes)
+
+app.use(cookieParser())
+app.use(authRoutes)
 
 app.get('/health', (req, res, next) => {
   res.json({

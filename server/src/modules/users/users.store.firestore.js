@@ -35,6 +35,21 @@ async function getUserByActiveCardUid(uid) {
   return item || null
 }
 
+async function getUserByAuthUid(authUid) {
+  const snapshot = await db
+    .collection('users')
+    .where('authUid', '==', authUid)
+    .limit(1)
+    .get()
+
+  if (snapshot.empty) return null
+
+  const doc = snapshot.docs[0]
+  return {
+    id: doc.id,
+    ...doc.data(),
+  }
+}
 
 async function listUsers(limit = 50) {
   const snapshot = await db.collection('users').limit(limit).get()
@@ -48,5 +63,6 @@ async function listUsers(limit = 50) {
 module.exports = {
   upsertUser,
   listUsers,
-  getUserByActiveCardUid
+  getUserByActiveCardUid,
+  getUserByAuthUid
 }
