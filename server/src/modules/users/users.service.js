@@ -1,10 +1,15 @@
+const { auth } = require('../../integrations/firebase/firebase.client')
+
 const {
   upsertUser,
   listUsers,
   getUserByActiveCardUid,
+  getUserByAuthUid,
+  getUserById,
+  updateUserById,
+  updateAllowedDeviceIds,
+  deleteUserById,
 } = require('./users.store.firestore')
-
-const { getUserByAuthUid } = require('./users.store.firestore')
 
 const seedData = [
   {
@@ -74,11 +79,37 @@ async function ensureAuthUserProfile({ authUid, email, name }) {
   return getUserByAuthUid(authUid)
 }
 
+async function patchUser(uid, patch) {
+  return updateUserById(uid, patch)
+}
+
+async function patchUserAllowedDeviceIds(uid, allowedDeviceIds) {
+  return updateAllowedDeviceIds(uid, allowedDeviceIds)
+}
+
+async function removeUser(uid) {
+  const user = await getUserById(uid)
+  if (!user) return false
+
+  await deleteUserById(uid)
+
+  try {
+    await auth.deleteUser(uid)
+  } catch (err) {
+    console.error('Failed to delete Firebase Auth user:', err)
+  }
+
+  return true
+}
+
 module.exports = {
   getUsers,
   seedUsers,
   findUserByUid,
   findActiveUserByUid,
   findUserByAuthUid,
-  ensureAuthUserProfile
+  ensureAuthUserProfile,
+  patchUser,
+  patchUserAllowedDeviceIds,
+  removeUser,
 }

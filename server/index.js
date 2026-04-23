@@ -8,6 +8,9 @@ const sessionRoutes = require('./src/modules/sessions/sessions.route')
 const userRoutes = require('./src/modules/users/users.routes')
 const logsRoutes = require('./src/modules/logs/logs.routes')
 const authRoutes = require('./src/modules/auth/auth.routes')
+const devicesRoutes = require('./src/devices-other/devices.routes')
+const boxesRoutes = require('./src/boxes-other/boxes.routes')
+const activitiesRoutes = require('./src/modules/activities/activities.routes')
 
 const cookieParser = require('cookie-parser')
 
@@ -51,6 +54,9 @@ setConfig({
 
 app.use(fanRoutes)
 app.use(mainBoxRoutes)
+app.use(devicesRoutes)
+app.use(boxesRoutes)
+app.use(activitiesRoutes)
 
 app.use(sessionRoutes)
 app.use(userRoutes)

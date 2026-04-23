@@ -60,9 +60,78 @@ async function listUsers(limit = 50) {
   }))
 }
 
+async function getUserById(userId) {
+  const doc = await db.collection('users').doc(userId).get()
+
+  if (!doc.exists) return null
+
+  return {
+    id: doc.id,
+    ...doc.data(),
+  }
+}
+
+async function updateUserById(userId, patch) {
+  const docRef = db.collection('users').doc(userId)
+  const existing = await docRef.get()
+
+  if (!existing.exists) return null
+
+  await docRef.set(
+    {
+      ...patch,
+      updatedAt: FieldValue.serverTimestamp(),
+    },
+    { merge: true },
+  )
+
+  const updated = await docRef.get()
+
+  return {
+    id: updated.id,
+    ...updated.data(),
+  }
+}
+
+async function updateAllowedDeviceIds(userId, allowedDeviceIds) {
+  const docRef = db.collection('users').doc(userId)
+  const existing = await docRef.get()
+
+  if (!existing.exists) return null
+
+  await docRef.set(
+    {
+      allowedDeviceIds,
+      updatedAt: FieldValue.serverTimestamp(),
+    },
+    { merge: true },
+  )
+
+  const updated = await docRef.get()
+
+  return {
+    id: updated.id,
+    ...updated.data(),
+  }
+}
+
+async function deleteUserById(userId) {
+  const docRef = db.collection('users').doc(userId)
+  const existing = await docRef.get()
+
+  if (!existing.exists) return false
+
+  await docRef.delete()
+  return true
+}
+
 module.exports = {
   upsertUser,
   listUsers,
   getUserByActiveCardUid,
-  getUserByAuthUid
+  getUserByAuthUid,
+  getUserById,
+  updateUserById,
+  updateAllowedDeviceIds,
+  deleteUserById,
 }

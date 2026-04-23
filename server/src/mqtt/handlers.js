@@ -1,4 +1,10 @@
 const sessionsService = require('../modules/sessions/sessions.service')
+const {
+  recordBoxStatus,
+  recordBoxSessions,
+  recordDeviceStatus,
+  recordDeviceFanState,
+} = require('../modules/activities/activities.service')
 
 function parseTopic(topic) {
   const parts = topic.split('/')
@@ -19,15 +25,15 @@ async function handleMqttMessage(topic, messageBuffer) {
     const { entityType, entityId, channelType, name } = parsed
 
     if (entityType === 'device' && channelType === 'state' && name === 'fan') {
-      return handleFanState(entityId, msg)
+      return await handleFanState(entityId, msg)
     }
 
     if (entityType === 'device' && channelType === 'state' && name === 'status') {
-      return handleDeviceStatus(entityId, msg)
+      return await handleDeviceStatus(entityId, msg)
     }
 
     if (entityType === 'box' && channelType === 'state' && name === 'status') {
-      return handleBoxStatus(entityId, msg)
+      return await handleBoxStatus(entityId, msg)
     }
 
     if (entityType === 'box' && channelType === 'event' && name === 'auth_request') {
@@ -49,23 +55,39 @@ async function handleMqttMessage(topic, messageBuffer) {
     }
 
     if (entityType === 'box' && channelType === 'state' && name === 'sessions') {
-      return await sessionsService.handleSessionsState(msg)
+      return await handleBoxSessionsState(entityId, msg)
     }
   } catch (err) {
     console.error('MQTT handler error:', err)
   }
 }
 
-function handleFanState(deviceId, msg) {
-  console.log(`Fan state updated [${deviceId}]:`, msg.payload)
+async function handleFanState(deviceId, msg) {
+  const payload = msg.payload || msg
+
+  await recordDeviceFanState(deviceId, payload)
+  console.log(`Fan state updated [${deviceId}]:`, payload)
 }
 
-function handleDeviceStatus(deviceId, msg) {
-  console.log(`Device status updated [${deviceId}]:`, msg.payload)
+async function handleDeviceStatus(deviceId, msg) {
+  const payload = msg.payload || msg
+
+  await recordDeviceStatus(deviceId, payload)
+  console.log(`Device status updated [${deviceId}]:`, payload)
 }
 
-function handleBoxStatus(boxId, msg) {
-  console.log(`Box status updated [${boxId}]:`, msg.payload)
+async function handleBoxStatus(boxId, msg) {
+  const payload = msg.payload || msg
+
+  await recordBoxStatus(boxId, payload)
+  console.log(`Box status updated [${boxId}]:`, payload)
+}
+
+async function handleBoxSessionsState(boxId, msg) {
+  const payload = msg.payload || msg
+
+  await recordBoxSessions(boxId, payload)
+  await sessionsService.handleSessionsState(msg)
 }
 
 module.exports = {
